@@ -1,0 +1,6 @@
+{
+  "name": "Drama Dodger",
+  "description": "A chaotic, funny, high-speed endless dodger game built on Base Mainnet. Dodge toxic comments, collect GM orbs, and survive the social media apocalypse. Built with React, Canvas, Wagmi, and Viem.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
