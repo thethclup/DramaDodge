@@ -1,0 +1,42 @@
+{
+  "name": "Drama Dodge Orchestrator",
+  "description": "Drama Dodge platformunda çalışan ERC-8004 uyumlu AI Agent. Drama avoidance, conflict management, smart dodging mechanics ve social navigation automation yapan zeki orchestrator.",
+  "version": "1.0.0",
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "image": "https://drama-dodge.vercel.app/logo.png",
+  "wallets": {
+    "base": "0xe157F1F5e12adB38Ba013683E9Ce24efe21e5bA6"
+  },
+  "services": [
+    {
+      "name": "A2A",
+      "endpoint": "https://drama-dodge.vercel.app/.well-known/agent-card.json",
+      "version": "1.0.0",
+      "description": "Agent-to-Agent communication"
+    },
+    {
+      "name": "MCP",
+      "endpoint": "https://drama-dodge.vercel.app/api/mcp",
+      "version": "1.0.0",
+      "description": "Model Context Protocol - Active command execution"
+    },
+    {
+      "name": "API",
+      "endpoint": "https://drama-dodge.vercel.app/api/agent",
+      "version": "1.0.0",
+      "description": "Main agent control API"
+    }
+  ],
+  "capabilities": [
+    "drama-avoidance",
+    "conflict-management",
+    "smart-dodging",
+    "social-navigation",
+    "crisis-prevention",
+    "reputation-protection",
+    "mcp-command-execution"
+  ],
+  "supportedChains": ["eip155:8453"],
+  "active": true,
+  "status": "online"
+}

@@ -1,20 +1,27 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Drama Dodger
 
-# Run and deploy your AI Studio app
+Drama Dodger is a chaotic, funny, and high-speed endless dodger game built for the Base mainnet. You are a Drama Dodger trying to survive in the wild world of social media. Run through an endless feed while dodging toxic comments, FUD attacks, ratio mobs, and more.
 
-This contains everything you need to run your app locally.
+## Core Gameplay
+- **Endless Dodger:** Fast-paced side-scrolling endless dodger.
+- **Controls:** Swipe up/down (or click top/bottom of canvas) and use Keyboard Space/Up/Down to jump and slide.
+- **Drama:** Dodge Ratio Comments, FUD Clouds, Cancel Waves.
+- **Collectibles:** GM Comments, Based Orbs to gain score and Hype Shield.
+- **Hype Shield:** Collect enough positive energy to activate temporary immunity.
 
-View your app in AI Studio: https://ai.studio/apps/3850e56b-3634-459e-99e1-d4adf75fa8bb
+## Features
+- Base Mainnet Support via SIWE (Sign-In with Ethereum)
+- On-chain action scoring capabilities
+- ERC-8021 Transaction Attribution support
+- ERC-8004 Trustless Agents support (MCP)
+- Smooth Canvas rendering and mobile-first, responsive design
 
 ## Run Locally
+1. Clone the repository.
+2. `npm install`
+3. `npm run dev`
 
-**Prerequisites:**  Node.js
+Open localhost:3000 and connect your wallet on the Base network to try the SIWE integration.
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## License
+MIT
