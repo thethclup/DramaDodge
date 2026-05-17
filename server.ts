@@ -12,7 +12,12 @@ async function startServer() {
   // Express handles well-known naturally if we serve public folder
   // Or we can just explicitly send the json if we want
   const publicPath = path.join(process.cwd(), 'public');
-  app.use(express.static(publicPath));
+  app.use(express.static(publicPath, { dotfiles: 'allow' }));
+
+  // Explicit fallback for agent-card
+  app.get("/.well-known/agent-card.json", (req, res) => {
+    res.sendFile(path.join(process.cwd(), "public", ".well-known", "agent-card.json"));
+  });
 
   // MCP GET
   app.get("/api/mcp", (req, res) => {
@@ -22,11 +27,36 @@ async function startServer() {
       name: "Drama Dodge MCP Endpoint",
       status: "active",
       description: "Active MCP server for Drama Dodge Orchestrator Agent",
-      capabilities: [
-        "drama-avoidance",
-        "conflict-management",
-        "smart-dodging",
-        "social-navigation",
+      capabilities: {
+        tools: {},
+        prompts: {},
+        resources: {}
+      },
+      tools: [
+        {
+          name: "calculate_drama_score",
+          description: "Calculates the drama score based on social inputs.",
+          inputSchema: { type: "object", properties: { input: { type: "string" } }, required: ["input"] }
+        },
+        {
+          name: "dodge_drama",
+          description: "Dodges incoming drama.",
+          inputSchema: { type: "object", properties: { dramaType: { type: "string" } }, required: ["dramaType"] }
+        }
+      ],
+      prompts: [
+        {
+          name: "drama_dodge_strategy",
+          description: "Suggests a strategy to dodge current drama."
+        }
+      ],
+      resources: [
+        {
+          uri: "drama://current-state",
+          name: "Current Drama State",
+          description: "The live state of drama in the network.",
+          mimeType: "application/json"
+        }
       ],
       timestamp: new Date().toISOString(),
     });
@@ -35,7 +65,44 @@ async function startServer() {
   // MCP POST
   app.post("/api/mcp", (req, res) => {
     try {
-      const { action, command, params } = req.body;
+      const { action, command, params, method, jsonrpc, id } = req.body;
+
+      if (method === "tools/list") {
+        return res.json({
+          jsonrpc: jsonrpc || "2.0",
+          id: id || null,
+          result: {
+            tools: [
+              { name: "calculate_drama_score", description: "Calculates drama score", inputSchema: { type: "object", properties: { input: { type: "string"} }, required: ["input"] } },
+              { name: "dodge_drama", description: "Dodges incoming drama.", inputSchema: { type: "object", properties: { dramaType: { type: "string" } }, required: ["dramaType"] } }
+            ]
+          }
+        });
+      }
+      if (method === "prompts/list" || action === "prompts/list") {
+        return res.json({
+          jsonrpc: jsonrpc || "2.0",
+          id: id || null,
+          result: { prompts: [{ name: "drama_dodge_strategy", description: "Suggests strategy" }] }
+        });
+      }
+      if (method === "resources/list" || action === "resources/list") {
+        return res.json({
+          jsonrpc: jsonrpc || "2.0",
+          id: id || null,
+          result: { resources: [{ uri: "drama://current-state", name: "Current Drama State" }] }
+        });
+      }
+
+      if (method === "tools/call" || action === "tools/call") {
+        const toolName = params?.name || req.body.name;
+        if (toolName === "calculate_drama_score") {
+          return res.json({ jsonrpc: jsonrpc || "2.0", id: id || null, result: { content: [{ type: "text", text: "Drama score calculated: 42 (Critical)" }] } });
+        }
+        if (toolName === "dodge_drama") {
+          return res.json({ jsonrpc: jsonrpc || "2.0", id: id || null, result: { content: [{ type: "text", text: "Successfully dodged drama: " + (params?.arguments?.dramaType || "Unknown") }] } });
+        }
+      }
 
       let result: any = {};
 

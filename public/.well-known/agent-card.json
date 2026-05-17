@@ -1,42 +1,61 @@
 {
   "name": "Drama Dodge Orchestrator",
-  "description": "Drama Dodge platformunda çalışan ERC-8004 uyumlu AI Agent. Drama avoidance, conflict management, smart dodging mechanics ve social navigation automation yapan zeki orchestrator.",
+  "description": "High-performance AI Agent specialized in Drama Dodge mechanics, real-time automation, drama avoidance, competitive optimization and ecosystem coordination on Base.",
   "version": "1.0.0",
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "image": "https://drama-dodge.vercel.app/logo.png",
-  "wallets": {
-    "base": "0xe157F1F5e12adB38Ba013683E9Ce24efe21e5bA6"
-  },
+  "owner": "0xe157F1F5e12adB38Ba013683E9Ce24efe21e5bA6",
+  "agentWallet": "0xe157F1F5e12adB38Ba013683E9Ce24efe21e5bA6",
+  "active": true,
+  "skills": [
+    {
+      "id": "drama-avoidance",
+      "name": "Drama Avoidance",
+      "description": "Real-time drama avoidance mechanics and competitive track management."
+    },
+    {
+      "id": "multi-feed-orchestration",
+      "name": "Multi-Feed Orchestration",
+      "description": "Manage and synchronize multiple social feeds and dodge drama simultaneously."
+    },
+    {
+      "id": "performance-optimization",
+      "name": "Performance Optimization",
+      "description": "Analyze and optimize dodging performance, timing and strategy in real-time."
+    }
+  ],
   "services": [
     {
       "name": "A2A",
-      "endpoint": "https://drama-dodge.vercel.app/.well-known/agent-card.json",
       "version": "1.0.0",
-      "description": "Agent-to-Agent communication"
+      "endpoint": ".well-known/agent-card.json"
     },
     {
       "name": "MCP",
-      "endpoint": "https://drama-dodge.vercel.app/api/mcp",
       "version": "1.0.0",
-      "description": "Model Context Protocol - Active command execution"
+      "endpoint": "/api/mcp"
     },
     {
       "name": "API",
-      "endpoint": "https://drama-dodge.vercel.app/api/agent",
       "version": "1.0.0",
-      "description": "Main agent control API"
+      "endpoint": "/api/agent"
     }
   ],
   "capabilities": [
     "drama-avoidance",
-    "conflict-management",
-    "smart-dodging",
-    "social-navigation",
-    "crisis-prevention",
-    "reputation-protection",
-    "mcp-command-execution"
+    "real-time-automation",
+    "multi-feed-management",
+    "speed-optimization",
+    "competitive-orchestration",
+    "ecosystem-coordination"
   ],
   "supportedChains": ["eip155:8453"],
-  "active": true,
-  "status": "online"
+  "x402Support": false,
+  "registrations": [
+    {
+      "agentId": null,
+      "agentRegistry": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+    }
+  ],
+  "supportedTrust": ["reputation"]
 }
