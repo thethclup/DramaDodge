@@ -16,6 +16,11 @@ Drama Dodger is a chaotic, funny, and high-speed endless dodger game built for t
 - ERC-8004 Trustless Agents support (MCP)
 - Smooth Canvas rendering and mobile-first, responsive design
 
+## Architecture & Agents
+- **A2A (Agent-to-Agent):** Orchestrator agent endpoint for inter-agent communication.
+- **MCP (Model Context Protocol):** Secure tool execution and drama calculation hooks available at `/api/mcp`.
+- **Serverless API:** Highly available Vercel backend using serverless API routes without NEXT.js bloatedness.
+
 ## Run Locally
 1. Clone the repository.
 2. `npm install`
