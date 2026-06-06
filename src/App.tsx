@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { GameCanvas } from './components/GameCanvas';
 import { GameState } from './game/engine';
-import { useAccount, useConnect, useDisconnect, useSignMessage } from 'wagmi';
+import { useAccount, useConnect, useDisconnect, useSignMessage, useSendTransaction } from 'wagmi';
 import { BUILDER_CODE, applyERC8021Attribution } from './lib/erc8021';
 import { SiweMessage } from 'siwe';
+import { Sun } from 'lucide-react';
 
 export default function App() {
   const { address, isConnected } = useAccount();
@@ -57,13 +58,25 @@ export default function App() {
     }
   };
 
-  const dummySayGM = () => {
-     if (!isConnected) return alert("Connect Wallet!");
-     // Mock ERC8021 Transaction attribution payload
-     const calldata = '0x'; // normal transaction calldata here
-     const att_calldata = applyERC8021Attribution(calldata);
-     console.log("Would send TX to Base Mainnet with attributed calldata:", att_calldata);
-     alert("On-chain action 'Say GM' simulated with ERC-8021 Attribution.");
+  const { sendTransactionAsync } = useSendTransaction();
+
+  const sendGMTransaction = async () => {
+    if (!isConnected) return alert("Connect Wallet!");
+    try {
+      const calldata = '0x';
+      const att_calldata = applyERC8021Attribution(calldata);
+      
+      const tx = await sendTransactionAsync({
+        to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3',
+        data: att_calldata as `0x${string}`,
+        value: 0n,
+      });
+      console.log("GM Transaction successful! Hash:", tx);
+      alert(`GM Transaction sent! Hash: ${tx}`);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to send GM Transaction.");
+    }
   };
 
   return (
@@ -176,7 +189,7 @@ export default function App() {
                          disabled={!isConnected}
                          className="w-full py-4 rounded-none border-b-4 border-[#440044] font-black italic text-xl text-white bg-[#FF00FF] hover:bg-[#cc00cc] disabled:bg-[#333] disabled:text-[#666] disabled:border-[#222] transition-colors uppercase tracking-tight flex items-center justify-center gap-3"
                      >
-                         {isConnected ? "✍️ SIGN SCORE ON-CHAIN" : "🔒 CONNECT WALLET"}
+                         {isConnected ? "✍️ RECORD THIS RUN ON-CHAIN" : "🔒 CONNECT WALLET"}
                      </button>
                      
                      <button 
@@ -185,6 +198,18 @@ export default function App() {
                      >
                          🔄 APE BACK IN
                      </button>
+
+                     {isConnected && (
+                       <div className="flex justify-center mt-2">
+                         <button 
+                           onClick={sendGMTransaction}
+                           className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold"
+                         >
+                           <Sun size={16} />
+                           Say GM
+                         </button>
+                       </div>
+                     )}
                    </div>
                </div>
             )}
@@ -220,13 +245,15 @@ export default function App() {
           </div>
 
           <div className="mt-4 md:mt-auto pt-6 border-t border-[#222] flex flex-row md:flex-col gap-3 shrink-0">
-            <div 
-              onClick={dummySayGM}
-              className="flex-1 md:flex-none p-4 bg-[#0055FF] rounded-none border-b-4 border-[#002288] text-center cursor-pointer hover:bg-[#0044cc] active:translate-y-[2px] active:border-b-2 transition-all shadow-[0_0_20px_rgba(0,85,255,0.4)]"
-            >
-              <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#00FFFF] mb-1 hidden md:block">On-Chain Action</div>
-              <div className="text-base md:text-xl font-black italic uppercase">SAY "GM"</div>
-            </div>
+            {isConnected && (
+              <button 
+                onClick={sendGMTransaction}
+                className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold"
+              >
+                <Sun size={16} />
+                Say GM
+              </button>
+            )}
             <div 
               onClick={() => alert("Trustless Agents ERC-8004 Stub Called")}
               className="flex-1 md:flex-none p-3 lg:p-4 bg-[#FF00FF]/20 rounded-none border border-[#FF00FF] text-center cursor-pointer hover:bg-[#FF00FF]/30 active:scale-95 transition-all group flex flex-col justify-center"
