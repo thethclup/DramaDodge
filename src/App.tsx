@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { GameCanvas } from './components/GameCanvas';
 import { GameState } from './game/engine';
-import { useAccount, useConnect, useDisconnect, useSignMessage, useSendTransaction } from 'wagmi';
-import { BUILDER_CODE, applyERC8021Attribution } from './lib/erc8021';
+import { useAccount, useConnect, useDisconnect, useSignMessage, useSendTransaction, useSendCalls } from 'wagmi';
+import { concat, Hex } from 'viem';
+import { BUILDER_CODE } from './lib/erc8021';
 import { SiweMessage } from 'siwe';
 import { Sun } from 'lucide-react';
+
+const BUILDER_SUFFIX = '0x07626173656170700080218021802180218021802180218021' as Hex;
 
 export default function App() {
   const { address, isConnected } = useAccount();
@@ -59,16 +62,42 @@ export default function App() {
   };
 
   const { sendTransactionAsync } = useSendTransaction();
+  const { sendCallsAsync } = useSendCalls();
 
   const sendGMTransaction = async () => {
     if (!isConnected) return alert("Connect Wallet!");
     try {
+      if (sendCallsAsync) {
+        try {
+          const txId = await sendCallsAsync({
+            calls: [
+              {
+                to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3',
+                value: 0n,
+                data: '0x',
+              }
+            ],
+            capabilities: {
+              dataSuffix: {
+                value: BUILDER_SUFFIX,
+                optional: true,
+              }
+            }
+          });
+          console.log("GM Transaction calls sent!", txId);
+          alert(`GM Transaction sent via sendCalls! ID: ${txId}`);
+          return;
+        } catch (e) {
+          console.warn("sendCalls failed or not fully supported by wallet, falling back to EOA sendTransaction...");
+        }
+      }
+
       const calldata = '0x';
-      const att_calldata = applyERC8021Attribution(calldata);
+      const attributedCalldata = concat([calldata, BUILDER_SUFFIX]);
       
       const tx = await sendTransactionAsync({
         to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3',
-        data: att_calldata as `0x${string}`,
+        data: attributedCalldata,
         value: 0n,
       });
       console.log("GM Transaction successful! Hash:", tx);
