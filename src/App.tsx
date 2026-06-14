@@ -3,11 +3,10 @@ import { GameCanvas } from './components/GameCanvas';
 import { GameState } from './game/engine';
 import { useAccount, useConnect, useDisconnect, useSignMessage, useSendTransaction, useSendCalls } from 'wagmi';
 import { concat, Hex } from 'viem';
-import { BUILDER_CODE } from './lib/erc8021';
+import { BUILDER_CODE, DATA_SUFFIX, applyERC8021Attribution } from './lib/erc8021';
 import { SiweMessage } from 'siwe';
 import { Sun } from 'lucide-react';
-
-const BUILDER_SUFFIX = '0x07626173656170700080218021802180218021802180218021' as Hex;
+import { base } from 'wagmi/chains';
 
 export default function App() {
   const { address, isConnected } = useAccount();
@@ -44,7 +43,7 @@ export default function App() {
         statement: `I survived Drama Dodger! Score: ${gameState.score}, Hype: ${Math.floor(gameState.distance)}. Builder Code: ${BUILDER_CODE}.`,
         uri: window.location.origin,
         version: '1',
-        chainId: 8453, // Base Mainnet
+        chainId: base.id, // Base Mainnet
         nonce: '12345678', // Base MCP or standard SIWE requires a nonce
       });
       // A real app would get nonce from backend. Using a mock nonce here.
@@ -52,7 +51,7 @@ export default function App() {
       const signature = await signMessageAsync({ account: address as `0x${string}`, message: preparedMessage });
       
       console.log("SIWE Signature:", signature);
-      alert(`Score securely signed on-chain!\nScore: ${gameState.score}`);
+      alert(`Score securely signed onchain!\nScore: ${gameState.score}`);
       // Mock saving to a leaderboard
       setLeaderboard(prev => [...prev, { address: address.substring(0, 6) + '...', score: gameState.score }].sort((a,b)=>b.score - a.score));
 
@@ -80,7 +79,7 @@ export default function App() {
             ],
             capabilities: {
               dataSuffix: {
-                value: BUILDER_SUFFIX,
+                value: DATA_SUFFIX,
                 optional: true,
               }
             }
@@ -94,7 +93,7 @@ export default function App() {
       }
 
       const calldata = '0x';
-      const attributedCalldata = concat([calldata, BUILDER_SUFFIX]);
+      const attributedCalldata = applyERC8021Attribution(calldata as Hex);
       
       const tx = await sendTransactionAsync({
         to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3',
@@ -219,7 +218,7 @@ export default function App() {
                          disabled={!isConnected}
                          className="w-full py-4 rounded-none border-b-4 border-[#440044] font-black italic text-xl text-white bg-[#FF00FF] hover:bg-[#cc00cc] disabled:bg-[#333] disabled:text-[#666] disabled:border-[#222] transition-colors uppercase tracking-tight flex items-center justify-center gap-3"
                      >
-                         {isConnected ? "✍️ RECORD THIS RUN ON-CHAIN" : "🔒 CONNECT WALLET"}
+                         {isConnected ? "✍️ RECORD THIS RUN ONCHAIN" : "🔒 CONNECT WALLET"}
                      </button>
                      
                      <button 
@@ -253,7 +252,7 @@ export default function App() {
 
         {/* Right Sidebar (Leaderboard / Actions) */}
         <div className="w-full md:w-72 lg:w-80 border-t md:border-t-0 md:border-l border-[#222] bg-[#0a0a0a] p-4 lg:p-6 flex flex-col shrink-0">
-          <div className="text-xs font-bold uppercase tracking-widest text-[#00FF00] mb-4">On-Chain Leaderboard</div>
+          <div className="text-xs font-bold uppercase tracking-widest text-[#00FF00] mb-4">Onchain Leaderboard</div>
           
           <div className="flex flex-col gap-3 overflow-y-auto max-h-48 md:max-h-none flex-1">
             {leaderboard.length === 0 ? (
