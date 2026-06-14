@@ -45,6 +45,7 @@ export default function App() {
         uri: window.location.origin,
         version: '1',
         chainId: 8453, // Base Mainnet
+        nonce: '12345678', // Base MCP or standard SIWE requires a nonce
       });
       // A real app would get nonce from backend. Using a mock nonce here.
       const preparedMessage = message.prepareMessage();
