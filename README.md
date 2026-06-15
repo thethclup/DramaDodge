@@ -11,7 +11,7 @@ Drama Dodger is a chaotic, funny, and high-speed endless dodger game built for t
 
 ## Features
 - Base Mainnet Support via SIWE (Sign-In with Ethereum)
-- On-chain action scoring capabilities
+- Onchain action scoring capabilities
 - ERC-8021 Transaction Attribution support
 - ERC-8004 Trustless Agents support (MCP)
 - Smooth Canvas rendering and mobile-first, responsive design

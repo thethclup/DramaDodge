@@ -1,6 +1,6 @@
 /**
  * ERC-8004: Trustless Agents (Work in Progress / Stub)
- * Standardizing on-chain agent interactions and delegations.
+ * Standardizing onchain agent interactions and delegations.
  */
 
 export interface TokenAgentConfig {

@@ -20,9 +20,7 @@ export class BaseMCPClient {
       name: "DramaDodgeOrchestrator",
       version: "1.0.0"
     }, {
-      capabilities: {
-        tools: {}
-      }
+      capabilities: {}
     });
   }
 
@@ -43,12 +41,12 @@ export class BaseMCPClient {
     return this.client.listTools();
   }
 
-  async callTool(name: string, args: Record<string, any>): Promise<CallToolResult> {
+  async callTool(name: string, args: Record<string, any>): Promise<any> {
     await this.connect();
     return this.client.callTool({
       name,
       arguments: args
-    });
+    }) as any;
   }
 }
 
