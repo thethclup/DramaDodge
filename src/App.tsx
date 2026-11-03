@@ -1,21 +1,30 @@
 import { useState, useEffect } from 'react';
 import { GameCanvas } from './components/GameCanvas';
 import { GameState } from './game/engine';
-import { useAccount, useConnect, useDisconnect, useSignMessage, useSendTransaction, useSendCalls } from 'wagmi';
-import { concat, Hex } from 'viem';
+import { useAccount, useConnect, useDisconnect, useSignMessage, useSendTransaction, useSendCalls, useBlockNumber, useSwitchChain } from 'wagmi';
+import { Hex } from 'viem';
 import { BUILDER_CODE, DATA_SUFFIX, applyERC8021Attribution } from './lib/erc8021';
+import { DENIM_BLOCK_TIME_MS, DENIM_MIGRATION_MAPPING } from './lib/denim';
 import { SiweMessage } from 'siwe';
-import { Sun } from 'lucide-react';
-import { base } from 'wagmi/chains';
+import { Sun, Zap, Info, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
+import { base, baseSepolia } from 'wagmi/chains';
 
 export default function App() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chain } = useAccount();
   const { connectors, connect } = useConnect();
   const { disconnect } = useDisconnect();
   const { signMessageAsync } = useSignMessage();
+  const { switchChain, chains } = useSwitchChain();
+  
+  // Denim 200ms native block monitoring (canonical blocks, watch enabled)
+  const { data: blockNumber } = useBlockNumber({ 
+    watch: true, 
+    query: { refetchInterval: DENIM_BLOCK_TIME_MS } 
+  });
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [triggerReset, setTriggerReset] = useState(0);
+  const [showDenimModal, setShowDenimModal] = useState(false);
   const [gameState, setGameState] = useState<GameState>({
     score: 0, distance: 0, hype: 0, isGameOver: false, isPaused: false, combo: 0
   });
@@ -37,13 +46,14 @@ export default function App() {
     if (!isConnected || !address) return alert("Please connect wallet first!");
     
     try {
+      const activeChainId = chain?.id || base.id;
       const message = new SiweMessage({
         domain: window.location.host,
         address: address as string,
-        statement: `I survived Drama Dodger! Score: ${gameState.score}, Hype: ${Math.floor(gameState.distance)}. Builder Code: ${BUILDER_CODE}.`,
+        statement: `I survived Drama Dodger! Score: ${gameState.score}, Hype: ${Math.floor(gameState.distance)}. Denim 200ms Block: ${blockNumber?.toString() || 'latest'}. Builder Code: ${BUILDER_CODE}.`,
         uri: window.location.origin,
         version: '1',
-        chainId: base.id, // Base Mainnet
+        chainId: activeChainId,
         nonce: '12345678', // Base MCP or standard SIWE requires a nonce
       });
       // A real app would get nonce from backend. Using a mock nonce here.
@@ -51,7 +61,7 @@ export default function App() {
       const signature = await signMessageAsync({ account: address as `0x${string}`, message: preparedMessage });
       
       console.log("SIWE Signature:", signature);
-      alert(`Score securely signed onchain!\nScore: ${gameState.score}`);
+      alert(`Score securely signed onchain!\nScore: ${gameState.score}\nCanonical Block: ${blockNumber?.toString() || 'latest'}`);
       // Mock saving to a leaderboard
       setLeaderboard(prev => [...prev, { address: address.substring(0, 6) + '...', score: gameState.score }].sort((a,b)=>b.score - a.score));
 
@@ -108,18 +118,46 @@ export default function App() {
     }
   };
 
+
   return (
     <div className="flex flex-col h-screen w-full bg-[#050505] text-white font-sans overflow-hidden border-4 lg:border-[12px] border-[#1a1a1a]">
       {/* Top Header */}
-      <div className="flex justify-between items-center px-4 py-4 lg:px-12 lg:py-8 bg-[#111] border-b-2 border-[#333] shadow-[0_0_30px_rgba(0,255,100,0.1)]">
+      <div className="flex flex-wrap justify-between items-center px-4 py-3 lg:px-12 lg:py-6 bg-[#111] border-b-2 border-[#333] shadow-[0_0_30px_rgba(0,255,100,0.1)] gap-2">
         <div className="flex flex-col">
           <span className="text-[10px] uppercase tracking-[0.2em] text-[#00FF00] font-bold hidden sm:block">Total Distance</span>
           <span className="text-3xl lg:text-5xl font-black italic text-white tracking-tighter">{Math.floor(gameState.distance)}<span className="text-xl lg:text-2xl ml-1 opacity-50">m</span></span>
         </div>
+
+        {/* Denim 200ms Native Block Status Badge */}
+        <div 
+          onClick={() => setShowDenimModal(true)}
+          className="cursor-pointer group flex items-center gap-2 bg-[#0052FF]/20 hover:bg-[#0052FF]/30 border border-[#0052FF] px-3 py-1.5 rounded transition-all shadow-[0_0_15px_rgba(0,82,255,0.3)] order-last sm:order-none"
+          title="Click to view Base Denim 200ms Native Block specifications"
+        >
+          <div className="relative flex items-center justify-center">
+            <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full bg-[#00FF00] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00FF00]"></span>
+          </div>
+          <div className="flex flex-col text-left">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#00FFFF] flex items-center gap-1">
+                <Zap size={11} className="text-[#00FFFF] fill-[#00FFFF]" />
+                Denim 200ms
+              </span>
+              <span className="text-[9px] bg-[#0052FF] px-1 py-0.2 rounded font-mono text-white">NATIVE</span>
+            </div>
+            <div className="text-[11px] font-mono font-bold text-zinc-300">
+              BLK #{blockNumber ? blockNumber.toString() : 'SYNCING...'}
+            </div>
+          </div>
+          <Info size={14} className="text-zinc-400 group-hover:text-white ml-1 transition-colors" />
+        </div>
+
         <div className="flex flex-col items-center">
           <span className="text-[10px] uppercase tracking-[0.2em] text-[#FF00FF] font-bold hidden sm:block">Social Score</span>
           <span className="text-4xl lg:text-6xl font-black italic text-[#FF00FF] [text-shadow:2px_2px_0px_#440044] lg:[text-shadow:4px_4px_0px_#440044] tracking-tight">{gameState.score}</span>
         </div>
+        
         <div className="flex flex-col items-end">
           <span className="text-[10px] uppercase tracking-[0.2em] text-[#00FFFF] font-bold hidden sm:block">Hype Meter</span>
           <div className="flex items-center gap-4">
@@ -196,7 +234,7 @@ export default function App() {
                    <p className="text-[#00FFFF] text-sm md:text-base mb-8 font-bold tracking-widest uppercase">Swipe/Tap top to Jump. Bottom to Slide.</p>
                    <button 
                        onClick={startGame}
-                       className="w-full max-w-sm py-5 rounded-none border-b-4 border-r-4 border-black font-black text-2xl text-black bg-[#00FF00] hover:bg-[#00cc00] hover:translate-y-[2px] hover:translate-x-[2px] hover:border-b-2 hover:border-r-2 active:scale-95 transition-all uppercase tracking-tighter"
+                       className="w-full max-w-sm py-5 rounded-none border-b-4 border-r-4 border-black font-black text-2xl text-black bg-[#00FF00] hover:bg-[#00cc00] hover:translate-y-[2px] hover:translate-x-[2px] hover:border-b-2 hover:border-r-2 active:scale-95 transition-all uppercase tracking-tighter cursor-pointer"
                    >
                        ENTER THE TRENCHES
                    </button>
@@ -216,14 +254,14 @@ export default function App() {
                      <button 
                          onClick={handleSignScore}
                          disabled={!isConnected}
-                         className="w-full py-4 rounded-none border-b-4 border-[#440044] font-black italic text-xl text-white bg-[#FF00FF] hover:bg-[#cc00cc] disabled:bg-[#333] disabled:text-[#666] disabled:border-[#222] transition-colors uppercase tracking-tight flex items-center justify-center gap-3"
+                         className="w-full py-4 rounded-none border-b-4 border-[#440044] font-black italic text-xl text-white bg-[#FF00FF] hover:bg-[#cc00cc] disabled:bg-[#333] disabled:text-[#666] disabled:border-[#222] transition-colors uppercase tracking-tight flex items-center justify-center gap-3 cursor-pointer"
                      >
                          {isConnected ? "✍️ RECORD THIS RUN ONCHAIN" : "🔒 CONNECT WALLET"}
                      </button>
                      
                      <button 
                          onClick={startGame}
-                         className="w-full py-4 rounded-none border-b-4 border-zinc-600 font-black italic text-xl text-black bg-white hover:bg-zinc-200 transition-colors uppercase tracking-tight"
+                         className="w-full py-4 rounded-none border-b-4 border-zinc-600 font-black italic text-xl text-black bg-white hover:bg-zinc-200 transition-colors uppercase tracking-tight cursor-pointer"
                      >
                          🔄 APE BACK IN
                      </button>
@@ -232,7 +270,7 @@ export default function App() {
                        <div className="flex justify-center mt-2">
                          <button 
                            onClick={sendGMTransaction}
-                           className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold"
+                           className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold cursor-pointer"
                          >
                            <Sun size={16} />
                            Say GM
@@ -277,7 +315,7 @@ export default function App() {
             {isConnected && (
               <button 
                 onClick={sendGMTransaction}
-                className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold"
+                className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold cursor-pointer"
               >
                 <Sun size={16} />
                 Say GM
@@ -294,16 +332,36 @@ export default function App() {
 
       </div>
 
-      {/* Footer */}
-      <div className="bg-[#000] p-3 lg:p-4 flex items-center justify-between text-[10px] lg:text-[11px] font-mono border-t border-[#222] shrink-0">
-        <div className="flex items-center gap-2 lg:gap-6">
+      {/* Footer with Denim Chain Switcher & Status */}
+      <div className="bg-[#000] p-3 lg:p-4 flex flex-wrap items-center justify-between text-[10px] lg:text-[11px] font-mono border-t border-[#222] shrink-0 gap-2">
+        <div className="flex items-center gap-2 lg:gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full animate-pulse ${isConnected ? 'bg-[#00FF00]' : 'bg-red-500'}`}></div>
-            <span className="text-zinc-400 hidden sm:inline">BASE MAINNET: </span>
+            <span className="text-zinc-400 hidden sm:inline">NETWORK:</span>
             <span className={isConnected ? "text-white uppercase font-bold" : "text-zinc-500 uppercase"}>
-              {isConnected ? "Connected" : "Disconnected"}
+              {chain?.name || (isConnected ? "Base (Denim 200ms)" : "Disconnected")}
             </span>
           </div>
+
+          {/* Network Switcher for Denim (Base Mainnet / Base Sepolia) */}
+          {isConnected && chains && chains.length > 1 && (
+            <div className="flex items-center gap-1 bg-[#1a1a1a] p-0.5 rounded border border-[#333]">
+              {chains.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => switchChain({ chainId: c.id })}
+                  className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-colors cursor-pointer ${
+                    chain?.id === c.id
+                      ? 'bg-[#0052FF] text-white'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  {c.id === base.id ? 'Mainnet' : 'Sepolia (Live)'}
+                </button>
+              ))}
+            </div>
+          )}
+
           {isConnected ? (
               <div className="flex items-center gap-2 bg-[#222] px-2 py-1 ml-2">
                 <span className="text-zinc-500 italic hidden md:inline">WALLET:</span>
@@ -320,12 +378,104 @@ export default function App() {
               </button>
           )}
         </div>
-        <div className="flex items-center gap-4">
+
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setShowDenimModal(true)}
+            className="text-[10px] text-[#00FFFF] hover:underline flex items-center gap-1 cursor-pointer"
+          >
+            <ShieldCheck size={12} />
+            Denim 200ms Migration Info
+          </button>
           <span className="text-zinc-500 uppercase hidden md:inline">Builder: {BUILDER_CODE}</span>
-          <span className="px-2 lg:px-3 py-1 bg-white text-black font-black uppercase tracking-tighter">v1.1.0</span>
+          <span className="px-2 lg:px-3 py-1 bg-white text-black font-black uppercase tracking-tighter">v1.2.0 (Denim)</span>
         </div>
       </div>
+
+      {/* Denim 200ms Migration Modal */}
+      {showDenimModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+          <div className="bg-[#0f0f13] border-2 border-[#0052FF] max-w-xl w-full p-6 text-white shadow-[0_0_50px_rgba(0,82,255,0.4)] relative">
+            <div className="flex justify-between items-center mb-4 border-b border-[#222] pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded bg-[#0052FF] flex items-center justify-center font-black">
+                  <Zap size={18} className="text-white fill-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black tracking-tight uppercase">Base Denim Migration</h3>
+                  <p className="text-[10px] text-[#00FFFF] font-mono">200ms Native Canonical Blocks</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowDenimModal(false)}
+                className="text-zinc-400 hover:text-white font-mono text-sm px-2 py-1 border border-zinc-700 hover:border-white transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="text-xs space-y-4 text-zinc-300 font-sans max-h-[60vh] overflow-y-auto pr-1">
+              <div className="bg-[#0052FF]/10 border border-[#0052FF]/30 p-3 rounded">
+                <div className="font-bold text-white mb-1 flex items-center gap-1.5">
+                  <CheckCircle2 size={14} className="text-[#00FF00]" />
+                  Flashblocks Replaced with Canonical 200ms Blocks
+                </div>
+                <p className="text-zinc-300 leading-relaxed">
+                  Denim replaces Flashblocks sub-block preconfirmations with canonical 200ms blocks. Subscriptions using <code className="text-[#FF00FF]">newFlashblocks</code> and RPC calls using the <code className="text-[#FF00FF]">"pending"</code> block tag are deprecated. All state queries now read directly from canonical 200ms blocks.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-2">Integration Updates Applied</h4>
+                <div className="grid grid-cols-1 gap-2 text-[11px] font-mono">
+                  <div className="bg-[#16161a] p-2.5 rounded border border-[#26262a] flex items-center justify-between">
+                    <span className="text-red-400 line-through">eth_subscribe("newFlashblocks")</span>
+                    <ArrowRight size={12} className="text-zinc-500" />
+                    <span className="text-[#00FF00]">eth_subscribe("newHeads")</span>
+                  </div>
+                  <div className="bg-[#16161a] p-2.5 rounded border border-[#26262a] flex items-center justify-between">
+                    <span className="text-red-400 line-through">eth_subscribe("pendingLogs")</span>
+                    <ArrowRight size={12} className="text-zinc-500" />
+                    <span className="text-[#00FF00]">eth_subscribe("logs")</span>
+                  </div>
+                  <div className="bg-[#16161a] p-2.5 rounded border border-[#26262a] flex items-center justify-between">
+                    <span className="text-red-400 line-through">eth_getBlockByNumber("pending")</span>
+                    <ArrowRight size={12} className="text-zinc-500" />
+                    <span className="text-[#00FF00]">eth_getBlockByNumber("latest")</span>
+                  </div>
+                  <div className="bg-[#16161a] p-2.5 rounded border border-[#26262a] flex items-center justify-between">
+                    <span className="text-red-400 line-through">eth_getBalance(..., "pending")</span>
+                    <ArrowRight size={12} className="text-zinc-500" />
+                    <span className="text-[#00FF00]">eth_getBalance(..., "latest")</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-[#18181f] p-3 rounded border border-zinc-800 text-[11px]">
+                <div className="font-bold text-white mb-1">Activation Status</div>
+                <ul className="list-disc list-inside space-y-1 text-zinc-400 font-mono">
+                  <li><span className="text-white">Base Sepolia:</span> Live since Oct 21, 2026 (18:00 UTC)</li>
+                  <li><span className="text-white">Vibenet:</span> Live for experimental testing</li>
+                  <li><span className="text-white">Base Mainnet:</span> Targeting November 2026</li>
+                  <li><span className="text-white">Active Block Polling:</span> 200ms pollingInterval on Wagmi transport</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-5 pt-3 border-t border-[#222] flex justify-between items-center">
+              <span className="text-[10px] text-zinc-500 font-mono">Current Block: #{blockNumber?.toString() || 'Syncing...'}</span>
+              <button 
+                onClick={() => setShowDenimModal(false)}
+                className="px-4 py-2 bg-[#0052FF] hover:bg-[#003ecb] text-white font-bold text-xs uppercase transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
     </div>
   );
 }
+
