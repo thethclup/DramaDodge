@@ -17,12 +17,13 @@ Drama Dodger is a chaotic, funny, and high-speed endless dodger game built for t
 - ERC-8004 Trustless Agents support (MCP)
 - Smooth Canvas rendering and mobile-first, responsive design
 
-## Base Denim Migration (200ms Native Blocks)
+## Base Denim Migration (200ms Native Blocks - LIVE on Mainnet)
 This project is fully migrated for the **Base Denim** hardfork:
-- **Flashblocks Deprecation**: Subscriptions like `newFlashblocks` and `pendingLogs` are replaced with `newHeads` and canonical `logs`.
-- **Elimination of `pending` Block Tag**: All RPC queries (`eth_getBlockByNumber`, `eth_getBalance`, `eth_call`, etc.) query latest canonical blocks.
-- **Fast 200ms Polling**: Wagmi transport configured with 200ms block time and polling cadence.
-- **Testnet Ready**: Testable immediately on Base Sepolia (Denim activated Oct 21, 2026) and Base Mainnet.
+- **Mainnet & Sepolia Live**: Denim activated on Base Sepolia on October 21, 2026 at 18:00 UTC, and on **Base Mainnet on November 5, 2026 at 18:00 UTC**.
+- **Flashblocks Retired**: Flashblocks production and WebSocket endpoints (`wss://mainnet.flashblocks.base.org/ws`) stopped at activation. Subscriptions use `newHeads` and canonical `logs`.
+- **Elimination of Preconfirmation / `pending` Tag**: All RPC queries (`eth_getBlockByNumber`, `eth_getBalance`, `eth_call`, etc.) query latest canonical 200ms blocks.
+- **Fast 200ms Polling**: Wagmi transport configured with 200ms block time and 200ms polling cadence.
+- **Node Operators**: Requires `base/base v1.5.1+` for Base Mainnet and `v1.5.0+` for Base Sepolia.
 
 ## Architecture & Agents
 - **A2A (Agent-to-Agent):** Orchestrator agent endpoint for inter-agent communication.

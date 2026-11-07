@@ -1,41 +1,66 @@
 /**
- * Denim Upgrade Module: 200ms Native Blocks Migration for Base
+ * Denim Upgrade Module: 200ms Native Blocks for Base Mainnet & Sepolia
  *
  * Denim replaces Flashblocks with canonical 200ms blocks.
- * Flashblocks subscriptions and "pending" block tags are deprecated/unavailable after activation.
+ * Base stopped producing Flashblocks on both networks at activation:
+ * - Base Sepolia: Activated October 21, 2026 at 18:00 UTC (LIVE)
+ * - Base Mainnet: Activated November 5, 2026 at 18:00 UTC (LIVE)
  *
- * Activation Timeline:
- * - Vibenet: Live for developer testing
- * - Base Sepolia: Activated October 21, 2026 at 18:00 UTC
- * - Base Mainnet: Targeting November 2026
+ * Flashblocks WebSocket streams, pending preconfirmation subscriptions, and
+ * flashblock_index predicates are retired.
  */
 
 import { PublicClient, BlockTag } from 'viem';
 
 export const DENIM_BLOCK_TIME_MS = 200;
 
+export const DENIM_ACTIVATION_INFO = {
+  mainnet: {
+    activated: true,
+    activationDate: '2026-11-05T18:00:00Z',
+    minNodeVersion: 'base/base v1.5.1',
+    status: 'LIVE'
+  },
+  sepolia: {
+    activated: true,
+    activationDate: '2026-10-21T18:00:00Z',
+    minNodeVersion: 'base/base v1.5.0',
+    status: 'LIVE'
+  },
+  vibenet: {
+    activated: true,
+    status: 'LIVE'
+  }
+} as const;
+
 export const DENIM_MIGRATION_MAPPING = {
+  retiredStreams: {
+    'wss://mainnet.flashblocks.base.org/ws': 'Use eth_subscribe("newHeads") or eth_subscribe("logs") on canonical RPC/WebSocket',
+    'wss://sepolia.flashblocks.base.org/ws': 'Use eth_subscribe("newHeads") or eth_subscribe("logs") on canonical RPC/WebSocket',
+  },
   subscriptions: {
-    newFlashblocks: 'newHeads',
-    pendingLogs: 'logs',
-    newFlashblockTransactions: 'newHeads (then query transactions from canonical block)',
+    newFlashblocks: 'eth_subscribe("newHeads")',
+    pendingLogs: 'eth_subscribe("logs")',
+    newFlashblockTransactions: 'eth_subscribe("newHeads"), then fetch transactions for each canonical 200ms block',
   },
   rpcCalls: {
-    'eth_getBlockByNumber("pending")': 'eth_getBlockByNumber("latest") or canonical block number',
+    'eth_getBlockByNumber("pending")': 'eth_getBlockByNumber("latest") (reads canonical 200ms block)',
     'eth_getBalance("pending")': 'eth_getBalance("latest")',
     'eth_getTransactionCount("pending")': 'eth_getTransactionCount("latest")',
     'eth_call("pending")': 'eth_call("latest")',
     'eth_estimateGas("pending")': 'eth_estimateGas("latest")',
-    'eth_simulateV1("pending")': 'eth_simulateV1("latest")',
-    'eth_getLogs(toBlock: "pending")': 'eth_getLogs(toBlock: "latest")',
-    'eth_getBlockTransactionCountByNumber("pending")': 'eth_getBlockTransactionCountByNumber("latest")',
+    'eth_simulateV1("pending")': 'Simulates against canonical state',
+    'eth_getLogs(toBlock: "pending")': 'Queries canonical 200ms blocks',
+    'eth_getBlockTransactionCountByNumber("pending")': 'Reads latest canonical 200ms block',
+    'base_transactionStatus': 'Deprecated on public endpoints; poll eth_getTransactionReceipt for 200ms inclusion',
+    'flashblock_index predicates': 'Removed. Bound transactions with block_number only',
   },
-  summary: 'Flashblocks preconfirmation state and "pending" tag have no equivalent after Denim; all operations return canonical 200ms blocks.',
+  pendingTagBehavior: 'The "pending" tag is still accepted by nodes but resolves directly to the latest canonical 200ms block (no preconfirmation state).',
 } as const;
 
 /**
  * Denim canonical block query: strictly uses 'latest' or explicit block number,
- * never the deprecated 'pending' block tag.
+ * ensuring clean canonical 200ms block consumption.
  */
 export async function getDenimCanonicalBlock(client: PublicClient, blockNumber?: bigint) {
   if (blockNumber !== undefined) {
@@ -55,11 +80,9 @@ export async function getDenimBalance(client: PublicClient, address: `0x${string
 }
 
 /**
- * Helper to check if Denim is active for a given chainId.
+ * Checks if Denim 200ms native blocks are active for a given chainId.
+ * Both Base Mainnet (8453) and Base Sepolia (84532) are fully active.
  */
 export function isDenimActive(chainId: number): boolean {
-  // Base Sepolia (84532): Activated Oct 21, 2026
-  // Base Mainnet (8453): November 2026 target
-  // Vibenet (73685): Live for testing
-  return chainId === 84532 || chainId === 8453 || chainId === 73685;
+  return chainId === 8453 || chainId === 84532 || chainId === 73685;
 }

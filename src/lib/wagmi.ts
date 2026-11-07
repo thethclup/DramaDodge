@@ -7,13 +7,13 @@ import { DENIM_BLOCK_TIME_MS } from './denim'
 // Denim 200ms native blocks chain overrides
 export const baseDenim = {
   ...base,
-  name: 'Base (Denim 200ms)',
+  name: 'Base Mainnet (Denim Live)',
   blockTime: DENIM_BLOCK_TIME_MS,
 } as const
 
 export const baseSepoliaDenim = {
   ...baseSepolia,
-  name: 'Base Sepolia (Denim 200ms)',
+  name: 'Base Sepolia (Denim Live)',
   blockTime: DENIM_BLOCK_TIME_MS,
 } as const
 

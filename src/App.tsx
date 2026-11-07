@@ -132,7 +132,7 @@ export default function App() {
         <div 
           onClick={() => setShowDenimModal(true)}
           className="cursor-pointer group flex items-center gap-2 bg-[#0052FF]/20 hover:bg-[#0052FF]/30 border border-[#0052FF] px-3 py-1.5 rounded transition-all shadow-[0_0_15px_rgba(0,82,255,0.3)] order-last sm:order-none"
-          title="Click to view Base Denim 200ms Native Block specifications"
+          title="Click to view Base Mainnet Denim 200ms Native Block specifications"
         >
           <div className="relative flex items-center justify-center">
             <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full bg-[#00FF00] opacity-75"></span>
@@ -142,9 +142,9 @@ export default function App() {
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] font-black uppercase tracking-wider text-[#00FFFF] flex items-center gap-1">
                 <Zap size={11} className="text-[#00FFFF] fill-[#00FFFF]" />
-                Denim 200ms
+                Base Mainnet Denim
               </span>
-              <span className="text-[9px] bg-[#0052FF] px-1 py-0.2 rounded font-mono text-white">NATIVE</span>
+              <span className="text-[9px] bg-[#00FF00] text-black px-1.5 py-0.2 rounded font-mono font-black">200ms LIVE</span>
             </div>
             <div className="text-[11px] font-mono font-bold text-zinc-300">
               BLK #{blockNumber ? blockNumber.toString() : 'SYNCING...'}
@@ -356,7 +356,7 @@ export default function App() {
                       : 'text-zinc-400 hover:text-white'
                   }`}
                 >
-                  {c.id === base.id ? 'Mainnet' : 'Sepolia (Live)'}
+                  {c.id === base.id ? 'Mainnet (Live)' : 'Sepolia (Live)'}
                 </button>
               ))}
             </div>
@@ -382,13 +382,13 @@ export default function App() {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setShowDenimModal(true)}
-            className="text-[10px] text-[#00FFFF] hover:underline flex items-center gap-1 cursor-pointer"
+            className="text-[10px] text-[#00FFFF] hover:underline flex items-center gap-1 cursor-pointer font-bold"
           >
-            <ShieldCheck size={12} />
-            Denim 200ms Migration Info
+            <ShieldCheck size={12} className="text-[#00FF00]" />
+            Denim Mainnet 200ms Live Info
           </button>
           <span className="text-zinc-500 uppercase hidden md:inline">Builder: {BUILDER_CODE}</span>
-          <span className="px-2 lg:px-3 py-1 bg-white text-black font-black uppercase tracking-tighter">v1.2.0 (Denim)</span>
+          <span className="px-2 lg:px-3 py-1 bg-[#00FF00] text-black font-black uppercase tracking-tighter">v1.3.0 (Denim Mainnet)</span>
         </div>
       </div>
 
@@ -402,8 +402,11 @@ export default function App() {
                   <Zap size={18} className="text-white fill-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black tracking-tight uppercase">Base Denim Migration</h3>
-                  <p className="text-[10px] text-[#00FFFF] font-mono">200ms Native Canonical Blocks</p>
+                  <h3 className="text-lg font-black tracking-tight uppercase flex items-center gap-2">
+                    Base Mainnet Denim
+                    <span className="text-[10px] bg-[#00FF00] text-black px-1.5 py-0.5 rounded font-mono font-bold">LIVE</span>
+                  </h3>
+                  <p className="text-[10px] text-[#00FFFF] font-mono">200ms Native Canonical Blocks on Mainnet & Sepolia</p>
                 </div>
               </div>
               <button 
@@ -418,16 +421,21 @@ export default function App() {
               <div className="bg-[#0052FF]/10 border border-[#0052FF]/30 p-3 rounded">
                 <div className="font-bold text-white mb-1 flex items-center gap-1.5">
                   <CheckCircle2 size={14} className="text-[#00FF00]" />
-                  Flashblocks Replaced with Canonical 200ms Blocks
+                  Denim Activated on Base Mainnet (Nov 5, 2026)
                 </div>
                 <p className="text-zinc-300 leading-relaxed">
-                  Denim replaces Flashblocks sub-block preconfirmations with canonical 200ms blocks. Subscriptions using <code className="text-[#FF00FF]">newFlashblocks</code> and RPC calls using the <code className="text-[#FF00FF]">"pending"</code> block tag are deprecated. All state queries now read directly from canonical 200ms blocks.
+                  Denim activated on <strong>Base Sepolia on October 21, 2026 at 18:00 UTC</strong> and on <strong>Base Mainnet on November 5, 2026 at 18:00 UTC</strong>. Base stopped producing Flashblocks on both networks at activation. Complete canonical blocks are now produced natively every 200ms.
                 </p>
               </div>
 
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-2">Integration Updates Applied</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-2">Integration Updates for Denim</h4>
                 <div className="grid grid-cols-1 gap-2 text-[11px] font-mono">
+                  <div className="bg-[#16161a] p-2.5 rounded border border-[#26262a] flex items-center justify-between">
+                    <span className="text-red-400 line-through">wss://mainnet.flashblocks.base.org/ws</span>
+                    <ArrowRight size={12} className="text-zinc-500" />
+                    <span className="text-[#00FF00]">eth_subscribe("newHeads" / "logs")</span>
+                  </div>
                   <div className="bg-[#16161a] p-2.5 rounded border border-[#26262a] flex items-center justify-between">
                     <span className="text-red-400 line-through">eth_subscribe("newFlashblocks")</span>
                     <ArrowRight size={12} className="text-zinc-500" />
@@ -444,26 +452,32 @@ export default function App() {
                     <span className="text-[#00FF00]">eth_getBlockByNumber("latest")</span>
                   </div>
                   <div className="bg-[#16161a] p-2.5 rounded border border-[#26262a] flex items-center justify-between">
-                    <span className="text-red-400 line-through">eth_getBalance(..., "pending")</span>
+                    <span className="text-red-400 line-through">flashblock_index predicates</span>
                     <ArrowRight size={12} className="text-zinc-500" />
-                    <span className="text-[#00FF00]">eth_getBalance(..., "latest")</span>
+                    <span className="text-[#00FF00]">Bound with block_number only</span>
+                  </div>
+                  <div className="bg-[#16161a] p-2.5 rounded border border-[#26262a] flex items-center justify-between">
+                    <span className="text-red-400 line-through">base_transactionStatus</span>
+                    <ArrowRight size={12} className="text-zinc-500" />
+                    <span className="text-[#00FF00]">eth_getTransactionReceipt</span>
                   </div>
                 </div>
               </div>
 
               <div className="bg-[#18181f] p-3 rounded border border-zinc-800 text-[11px]">
-                <div className="font-bold text-white mb-1">Activation Status</div>
+                <div className="font-bold text-white mb-1">Network & Node Activation Status</div>
                 <ul className="list-disc list-inside space-y-1 text-zinc-400 font-mono">
-                  <li><span className="text-white">Base Sepolia:</span> Live since Oct 21, 2026 (18:00 UTC)</li>
-                  <li><span className="text-white">Vibenet:</span> Live for experimental testing</li>
-                  <li><span className="text-white">Base Mainnet:</span> Targeting November 2026</li>
+                  <li><span className="text-[#00FF00] font-bold">Base Mainnet:</span> LIVE (Activated Nov 5, 2026, 18:00 UTC)</li>
+                  <li><span className="text-[#00FF00] font-bold">Base Sepolia:</span> LIVE (Activated Oct 21, 2026, 18:00 UTC)</li>
+                  <li><span className="text-white">Node Requirement:</span> base/base v1.5.1+ (Mainnet), v1.5.0+ (Sepolia)</li>
                   <li><span className="text-white">Active Block Polling:</span> 200ms pollingInterval on Wagmi transport</li>
+                  <li><span className="text-white">"pending" Block Tag:</span> Accepted but resolves directly to latest canonical 200ms block</li>
                 </ul>
               </div>
             </div>
 
             <div className="mt-5 pt-3 border-t border-[#222] flex justify-between items-center">
-              <span className="text-[10px] text-zinc-500 font-mono">Current Block: #{blockNumber?.toString() || 'Syncing...'}</span>
+              <span className="text-[10px] text-zinc-500 font-mono">Current Canonical Block: #{blockNumber?.toString() || 'Syncing...'}</span>
               <button 
                 onClick={() => setShowDenimModal(false)}
                 className="px-4 py-2 bg-[#0052FF] hover:bg-[#003ecb] text-white font-bold text-xs uppercase transition-colors cursor-pointer"
